@@ -1,0 +1,88 @@
+import serial
+import serial.tools.list_ports
+import time
+from pymongo import MongoClient
+from datetime import datetime
+import os
+
+def listar_puertos():
+    puertos = list(serial.tools.list_ports.comports())
+    print("\n📝 Puertos disponibles:")
+    for port in puertos:
+        print(f"- {port.device}")
+    return puertos
+
+def intentar_conexion(puerto, baudrate=115200):
+    try:
+        print(f"\n🔌 Intentando conectar a {puerto}...")
+        conexion = serial.Serial(puerto, baudrate, timeout=1)
+        time.sleep(2)
+        return conexion
+    except:
+        return None
+
+def intentar_conexion_serial(puerto, intentos=3):
+    for i in range(intentos):
+        try:
+            print(f"\n🔌 Intento {i+1} de conectar a {puerto}...")
+            # Liberar el puerto si está en uso
+            os.system(f"kill -9 $(lsof -t {puerto})")
+            time.sleep(1)
+            
+            conexion = serial.Serial(
+                port=puerto,
+                baudrate=115200,
+                timeout=1,
+                exclusive=True  # Asegura uso exclusivo del puerto
+            )
+            time.sleep(2)
+            return conexion
+        except Exception as e:
+            print(f"❌ Intento {i+1} fallido: {e}")
+            time.sleep(2)
+    return None
+
+try:
+    # Verificar MongoDB
+    client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=5000)
+    client.server_info()  # Verificar conexión
+    db = client["base_datos"]
+    coleccion = db["mi_coleccion"]
+    
+    # Intentar conexión serial
+    puerto_arduino = "/dev/cu.usbserial-0001"
+    arduino = intentar_conexion_serial(puerto_arduino)
+    
+    if not arduino:
+        raise Exception("No se pudo establecer conexión con el puerto serial")
+    
+    print("🟢 Conectado a Arduino y MongoDB. Esperando datos del sensor...")
+    
+    while True:
+        if arduino.in_waiting > 0:
+            try:
+                datos = arduino.readline().decode('utf-8').strip()
+                documento = {
+                    "sensor": "MQ135",
+                    "valor": datos,
+                    "fecha": datetime.now()
+                }
+                coleccion.insert_one(documento)
+                print(f"📥 Dato insertado: {documento}")
+                
+            except Exception as e:
+                print(f"❌ Error procesando datos: {e}")
+                
+except Exception as e:
+    print(f"❌ Error: {e}")
+finally:
+    try:
+        if 'arduino' in locals() and arduino:
+            arduino.close()
+    except:
+        pass
+    try:
+        if 'client' in locals():
+            client.close()
+    except:
+        pass

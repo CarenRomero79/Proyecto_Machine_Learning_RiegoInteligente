@@ -1,0 +1,50 @@
+# ejecutar esta libreria en la terminal pip install pymongo pytz
+
+from pymongo import MongoClient
+from urllib.parse import quote_plus
+from datetime import datetime
+import pytz
+
+# Zona horaria Colombia
+timezone = pytz.timezone('America/Bogota')
+
+# Credenciales MongoDB Atlas
+#usuario = quote_plus("karenjnps")
+#clave = quote_plus("Jessy1202*")
+#cluster = "cluster0.dcf60ha.mongodb.net"
+base_datos = "base_datos"
+
+# URI con appName
+#uri = f"mongodb+srv://{usuario}:{clave}@{cluster}/{base_datos}?retryWrites=true&w=majority&appName=Cluster0"
+
+# Conectar a MongoDB Atlas
+#client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+
+# Si usas local:
+uri = "mongodb://localhost:27017/"
+
+#client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+client = MongoClient("mongodb://localhost:27017/")
+
+try:
+    client.server_info()
+    print("✅ Conexión exitosa a MongoDB Atlas")
+except Exception as e:
+    print("❌ Error de conexión:", e)
+
+# Acceder a base y colección
+db = client[base_datos]
+coleccion = db["mi_coleccion"]
+
+# ✅ Datos a insertar (puedes modificar estos valores)
+dato = {
+    "sensor": "DHT11",
+    "temperatura": 22.5,
+    "humedad": 60,
+    "ubicacion": "Oficina",
+    "fecha_hora": datetime.now(timezone)
+}
+
+# Insertar documento
+resultado = coleccion.insert_one(dato)
+print("✅ Documento insertado con _id:", resultado.inserted_id)

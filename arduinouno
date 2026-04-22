@@ -1,0 +1,73 @@
+import serial
+import time
+from pymongo import MongoClient
+from urllib.parse import quote_plus
+from datetime import datetime
+import pytz
+import re
+
+# Zona horaria Colombia
+timezone = pytz.timezone('America/Bogota')
+
+# Puerto serial del Arduino (ajusta si cambia)
+puerto_arduino = "COM5"
+baud_rate = 9600
+
+# Conexión a MongoDB local
+uri = "mongodb://localhost:27017/"
+base_datos = "base_datos"
+coleccion_nombre = "mi_coleccion"
+
+try:
+    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    client.server_info()  # Fuerza conexión
+    db = client[base_datos]
+    coleccion = db[coleccion_nombre]
+    print("✅ Conectado a MongoDB en localhost")
+except Exception as e:
+    print("❌ Error al conectar con MongoDB:", e)
+    exit()
+
+# Conexión al Arduino
+try:
+    arduino = serial.Serial(puerto_arduino, baud_rate, timeout=1)
+    time.sleep(2)  # Esperar que Arduino reinicie
+    print(f"✅ Conectado al Arduino en {puerto_arduino}")
+except Exception as e:
+    print("❌ Error al conectar al puerto serial:", e)
+    exit()
+
+# Regex para extraer los datos
+patron = r"Temperatura:\s*([\d.]+)\s*°C,\s*Humedad:\s*([\d.]+)"
+
+print("🟢 Iniciando lectura desde Arduino...")
+
+while True:
+    try:
+        linea = arduino.readline().decode(errors='ignore').strip()
+
+        if "Temperatura:" in linea and "Humedad:" in linea:
+            coincidencia = re.search(patron, linea)
+            if coincidencia:
+                t = float(coincidencia.group(1))
+                h = float(coincidencia.group(2))
+
+                doc = {
+                    "sensor": "DHT11",
+                    "temperatura": t,
+                    "humedad": h,
+                    "timestamp": datetime.now(timezone)
+                }
+
+                resultado = coleccion.insert_one(doc)
+                print(f"📤 Insertado: T={t}°C, H={h}%, ID={resultado.inserted_id}")
+            else:
+                print("⚠️ No se pudo extraer temperatura/humedad:", linea)
+        elif linea != "":
+            print("ℹ️ Línea ignorada:", linea)
+
+    except KeyboardInterrupt:
+        print("⛔ Lectura detenida por el usuario.")
+        break
+    except Exception as e:
+        print("❌ Error en la lectura/envío:", e)

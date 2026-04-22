@@ -1,0 +1,110 @@
+Sistema de riego inteligente 
+
+Arduino → Serial → Python → MongoDB→ DataFrame → entrenamiento → modelo
+
+🎯 Resultado del proyecto
+
+✔ IoT real
+✔ Base de datos formato JSON
+{
+  "sensor": "DHT11",
+  "temperatura": t,
+  "humedad": h,
+  "timestamp": datetime
+}
+✔ Dashboard web
+✔ Machine Learning integrado
+✔ Sistema automático de riego
+
+
+
+
+🟢 1. Introducción
+
+ “Sistema inteligente de riego para cultivo de maíz usando IoT y Machine Learning”.
+
+El objetivo principal es optimizar el uso del agua en cultivos agrícolas, evitando el riego innecesario y previniendo el estrés hídrico en las plantas.
+
+🌱 2. Problema
+
+En la agricultura tradicional, el riego suele hacerse de forma manual o empírica, lo que genera dos problemas principales:
+
+💧 Desperdicio de agua cuando se riega sin necesidad
+🌽 Daño en cultivos cuando no se riega a tiempo
+
+Por eso, se necesita un sistema que tome decisiones basadas en datos reales.
+
+⚙️ 3. Solución propuesta
+
+Nuestro sistema automatiza el monitoreo del cultivo utilizando:
+
+Sensor de temperatura y humedad (DHT11)
+Microcontrolador Arduino
+Base de datos MongoDB
+Servidor Flask en Python
+Modelo de Machine Learning
+Interfaz web para visualización
+
+📡 4. Funcionamiento del sistema (IoT)
+
+El proceso funciona de la siguiente manera:
+
+El sensor DHT11 mide temperatura y humedad del ambiente.
+El Arduino envía los datos por comunicación serial.
+Un programa en Python recibe los datos.
+Los datos se almacenan en MongoDB.
+El sistema web los visualiza en tiempo real.
+
+🧠 5. Machine Learning
+
+Para la toma de decisiones implementamos un modelo de inteligencia artificial.
+
+Utilizamos un algoritmo de clasificación llamado:
+
+👉 Random Forest
+
+Este modelo aprende de los datos históricos y determina:
+
+🌱 Si el cultivo necesita riego
+💧 O si la humedad es suficiente
+
+Se basa en variables como temperatura y humedad.
+tolera ruido
+no necesita normalización estricta
+funciona bien con pocos datos
+
+
+
+🔮 6. Resultado del modelo
+
+El sistema genera dos posibles decisiones:
+
+💧 “REGAR AHORA” cuando la humedad es baja
+🌱 “NO ES NECESARIO REGAR” cuando las condiciones son adecuadas
+
+Esto permite automatizar la toma de decisiones agrícolas.
+
+📊 7. Interfaz web
+
+Desarrollamos una interfaz web donde:
+
+Se muestran gráficas de temperatura y humedad en tiempo real 📈
+Se visualiza la recomendación del modelo de Machine Learning 🧠
+Se actualiza automáticamente cada pocos segundos
+
+🌐 8. Tecnologías utilizadas
+Arduino (sensores IoT)
+Python
+Flask
+MongoDB
+JavaScript + Chart.js
+Machine Learning (Scikit-learn)
+
+🚀 9. Conclusión
+
+Este proyecto demuestra cómo la tecnología puede aplicarse en la agricultura para:
+
+Optimizar recursos 💧
+Mejorar la productividad 🌽
+Automatizar decisiones con inteligencia artificial 🧠
+
